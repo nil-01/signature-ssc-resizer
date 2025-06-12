@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Signature Validator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    input, button {
+      margin-top: 10px;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h2>Upload Signature Image</h2>
+  <input type="file" id="fileInput" accept="image/jpeg,image/jpg"><br>
+  <button onclick="upload()">Validate Signature</button>
+  <div id="result"></div>
+
+  <script>
+    async function upload() {
+      const fileInput = document.getElementById('fileInput');
+      const resultDiv = document.getElementById('result');
+
+      if (fileInput.files.length === 0) {
+        resultDiv.textContent = "Please select a file first.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      resultDiv.textContent = "Uploading and validating...";
+
+      try {
+        const res = await fetch("/validate-signature", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          resultDiv.innerHTML = `<strong>Success:</strong> ${data.message}<br>
+            <strong>File Size:</strong> ${data.size_kb} KB<br>
+            <strong>Dimensions:</strong> ${data.dimensions_px}<br>
+            <strong>DPI:</strong> ${data.dpi}`;
+        } else {
+          resultDiv.innerHTML = `<strong>Error:</strong> ${data.error}`;
+        }
+      } catch (err) {
+        resultDiv.textContent = "Something went wrong: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
